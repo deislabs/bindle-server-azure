@@ -1,0 +1,28 @@
+[package]
+name = "bindle-server-azure"
+version = "0.1.0"
+authors = [
+    "Taylor Thomas <taylor.thomas@microsoft.com>"
+]
+edition = "2018"
+license-file = "LICENSE.txt"
+description = "An Azure storage and server implementation"
+repository = "https://github.com/deislabs/bindle-server-azure"
+keywords = [
+    "storage",
+    "package",
+]
+exclude = [
+    ".github/*",
+    ".gitignore",
+]
+
+[dependencies]
+azure_cosmos = { git = "https://github.com/Azure/azure-sdk-for-rust", version = "0.1"}
+azure_core = { git = "https://github.com/Azure/azure-sdk-for-rust", version = "0.1"}
+azure_storage = { git = "https://github.com/Azure/azure-sdk-for-rust", version = "0.1"}
+bindle = { version = "0.1", default-features = false, features = ["server"] }
+clap = "3.0.0-beta.2"
+tokio = { version = "0.2", features = ["full"] }
+log = "0.4"
+env_logger = "0.8"
