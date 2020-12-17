@@ -210,6 +210,7 @@ dependencies = [
 name = "bindle-server-azure"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "azure_core",
  "azure_cosmos",
  "azure_storage",
