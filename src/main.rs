@@ -3,12 +3,13 @@ mod storage;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
-use clap::Clap;
-
 use bindle::{
     search,
     server::{server, TlsConfig},
 };
+use clap::Clap;
+
+use storage::{AzureBlobConfig, CosmosConfig};
 
 const DESCRIPTION: &str = r#"
 The Bindle Server
@@ -30,15 +31,6 @@ struct Opts {
     )]
     address: String,
     #[clap(
-        name = "bindle_directory",
-        short = 'd',
-        long = "directory",
-        env = "BINDLE_DIRECTORY",
-        default_value = "/tmp",
-        about = "the path to the directory in which bindles will be stored"
-    )]
-    bindle_directory: PathBuf,
-    #[clap(
         name = "cert_path",
         short = 'c',
         long = "cert-path",
@@ -56,6 +48,36 @@ struct Opts {
         about = "the path to the TLS certificate key to use. If set, --cert-path must be set as well. If not set, the server will use HTTP"
     )]
     key_path: Option<PathBuf>,
+    #[clap(
+        long = "db-account",
+        env = "BINDLE_DB_ACCOUNT",
+        about = "The Cosmos account name to use"
+    )]
+    cosmos_account: String,
+    #[clap(
+        long = "db-name",
+        env = "BINDLE_DB_NAME",
+        about = "The Cosmos database name to use. This database should have two collections named `labels` and `invoices`"
+    )]
+    cosmos_db_name: String,
+    #[clap(
+        long = "db-auth",
+        env = "BINDLE_DB_AUTH",
+        about = "The authentication token to use for Cosmos. Should be a primary token with create, read, and update access to the `invoices` collection and create and read access to the `labels` collection"
+    )]
+    cosmos_auth_token: String,
+    #[clap(
+        long = "storage-account",
+        env = "BINDLE_STORAGE_ACCOUNT",
+        about = "The Azure Storage account name to use"
+    )]
+    storage_account: String,
+    #[clap(
+        long = "storage-auth",
+        env = "BINDLE_STORAGE_AUTH",
+        about = "The authentication token to use for Azure storage. Should be a SAS token with create, read, and delete access to the `parcels` container"
+    )]
+    storage_auth_token: String,
 }
 
 #[tokio::main(threaded_scheduler)]
@@ -66,14 +88,19 @@ async fn main() -> anyhow::Result<()> {
     let addr: SocketAddr = opts.address.parse()?;
     let index = search::StrictEngine::default();
     // TODO: swap this out once configured
-    let store =
-        bindle::storage::file::FileStorage::new(&opts.bindle_directory, index.clone()).await;
+    let store = storage::AzureStorage::new(
+        CosmosConfig {
+            account_name: opts.cosmos_account,
+            database_name: opts.cosmos_db_name,
+            authorization_token: opts.cosmos_auth_token,
+        },
+        AzureBlobConfig {
+            account_name: opts.storage_account,
+            sas_token: opts.storage_auth_token,
+        },
+    )?;
 
-    log::info!(
-        "Starting server at {}, and serving bindles from {}",
-        addr.to_string(),
-        opts.bindle_directory.display()
-    );
+    log::info!("Starting server at {}", addr.to_string(),);
 
     // Map doesn't work here because we've already moved data out of opts
     let tls = match opts.cert_path {
