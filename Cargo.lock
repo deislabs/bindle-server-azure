@@ -211,6 +211,7 @@ name = "bindle-server-azure"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "azure_core",
  "azure_cosmos",
  "azure_storage",
@@ -218,6 +219,10 @@ dependencies = [
  "clap",
  "env_logger",
  "log",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
  "tokio",
 ]
 
