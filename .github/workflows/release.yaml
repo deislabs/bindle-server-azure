@@ -53,7 +53,7 @@ jobs:
         shell: bash
         run: |
           mkdir _dist
-          cp README.md LICENSE.txt target/release/bindle-server-azure${{ matrix.config.extension }}
+          cp README.md LICENSE.txt target/release/bindle-server-azure${{ matrix.config.extension }} _dist/
           cd _dist
           tar czf bindle-${{ env.RELEASE_VERSION }}-${{ env.RUNNER_OS }}-${{ matrix.config.arch }}.tar.gz README.md LICENSE.txt bindle-server-azure${{ matrix.config.extension }}
 
